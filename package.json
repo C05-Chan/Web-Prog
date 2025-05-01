@@ -1,0 +1,37 @@
+{
+  "name": "web-prog",
+  "version": "1.0.0",
+  "description": "Replace this text with an introduction to your key features.",
+  "main": "srvr.js",
+  "dependencies": {
+    "express": "^4.21.2",
+    "sqlite3": "^5.1.7"
+  },
+  "scripts": {
+    "test": "node --watch srvr.js",
+    "start": "node srvr.js",
+    "setup": "npm install express",
+    "config": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/C05-Chan/Web-Prog.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/C05-Chan/Web-Prog/issues"
+  },
+  "homepage": "https://github.com/C05-Chan/Web-Prog#readme",
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-portsoc": "^1.0.1"
+  },
+  "eslintConfig": {
+    "extends": "portsoc",
+    "root": true,
+    "env": {
+      "browser": true
+    }
+  }
+}
