@@ -30,7 +30,7 @@ const timesManagementList = document.querySelector('#times-management-list');
 
 const modifyTimes = document.querySelector('#modify-times');
 const addTime = document.querySelector('#add-time');
-const saveTime = document.querySelector('#save-time');
+const saveTimesBtn = document.querySelector('#save-times');
 const popup = document.getElementById('time-popup');
 const timeInput = document.getElementById('time-input');
 const popupDone = document.getElementById('popup-done');
@@ -63,11 +63,25 @@ function showElement(e) {
   e.style.display = 'block';
 }
 
-// Utility function to hide the specified element //
 function hideElement(e) {
   // e.classList.add('hidden');
   e.style.display = 'none';
 }
+
+function errorMessageDisplay(message, type) {
+  const errorColours = [
+    { type: 'error', colour: 'red' },
+    { type: 'warning', colour: 'orange' },
+    { type: 'success', colour: 'green' },
+    { type: 'info', colour: 'blue' },
+  ];
+
+  errorMessage.textContent = message;
+
+  const colour = errorColours.find(config => config.type === type);
+  errorMessage.style.color = colour ? colour.colour : 'black';
+}
+
 
 // Nav Bar Functions //
 signInBtn.addEventListener('click', () => {
@@ -108,7 +122,7 @@ function getRunners() {
       return runnersData;
     })
     .catch(err => {
-      errorMessage.textContent('Error loading CSV');
+      errorMessageDisplay('Error loading CSV', 'error');
       console.error('Error loading CSV:', err);
       return [];
     });
@@ -198,17 +212,19 @@ submitTimeBtn.addEventListener('click', async () => {
 
     const result = await response.json();
     if (!response.ok) {
-      errorMessage.textContent = result.message;
+      errorMessageDisplay(result.message, 'error');
       localStorage.setItem('runners', JSON.stringify(recordedTimes));
       return;
     }
     console.log('Times submitted successfully:', result);
+    errorMessageDisplay('Times submitted successfully:', 'success');
+
 
     hideElement(document.querySelector('.stopwatch'));
     showElement(modifyTimes);
   } catch (error) {
     console.error('Error:', error);
-    errorMessage.textContent = 'Error submitting times, it is currently stored locally, please try again out of offline mode';
+    errorMessageDisplay('Error submitting times, it is currently stored locally, please try again out of offline mode', 'error');
     localStorage.setItem('times', JSON.stringify(recordedTimes));
     showElement(modifyTimes);
   }
@@ -217,49 +233,47 @@ submitTimeBtn.addEventListener('click', async () => {
 modifyTimes.addEventListener('click', () => {
   showElement(document.querySelector('.manage-times-container'));
   hideElement(modifyTimes);
+  hideElement(timesList);
   displayTimes();
 });
 
-// Modify the displayTimes function to ensure buttons are visible
 function displayTimes() {
   timesManagementList.innerHTML = '';
 
   recordedTimes.forEach((time, index) => {
-    const listItem = document.createElement('li');
-    listItem.style.display = 'flex'; // Add flex display
-    listItem.style.alignItems = 'center'; // Center items vertically
-    listItem.style.gap = '10px'; // Add some spacing
+    const wrapper = document.createElement('section');
 
-    const timeSpan = document.createElement('span');
-    timeSpan.textContent = time;
-    listItem.appendChild(timeSpan);
+    const span = document.createElement('span');
+    span.textContent = time;
 
-    const editBtn = document.createElement('button');
-    editBtn.textContent = 'Edit';
-    editBtn.style.padding = '5px 10px'; // Add some padding
-    editBtn.addEventListener('click', () => {
+    const editTime = document.createElement('button');
+    editTime.textContent = 'Edit';
+
+    editTime.addEventListener('click', () => {
       editIndex = index;
       timeInput.value = time;
       popup.style.display = 'block';
     });
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.style.padding = '5px 10px'; // Add some padding
-    deleteBtn.addEventListener('click', () => {
+
+    const deleteTime = document.createElement('button');
+    deleteTime.textContent = 'Delete';
+
+    deleteTime.addEventListener('click', () => {
       recordedTimes.splice(index, 1);
       displayTimes();
     });
 
-    listItem.appendChild(editBtn);
-    listItem.appendChild(deleteBtn);
-    timesManagementList.appendChild(listItem);
+    wrapper.appendChild(span);
+    wrapper.appendChild(editTime);
+    wrapper.appendChild(deleteTime);
+    timesManagementList.appendChild(wrapper);
   });
 }
 
 popupDone.addEventListener('click', () => {
   const newTime = timeInput.value.trim();
-  if (!/^\d{2}:\d{2}:\d{2}:\d{3}$/.test(newTime)) {
+  if (!/^\d{1,2}:\d{2}:\d{2}:\d{3}$/.test(newTime)) {
     errorMessage.textContent = 'Invalid format. Please use hh:mm:ss:ms';
     return;
   }
@@ -269,7 +283,7 @@ popupDone.addEventListener('click', () => {
     editIndex = null;
   } else {
     recordedTimes.push(newTime);
-    recordedTimes.sort(); // You can replace this with custom time sort
+    recordedTimes.sort();
   }
 
   popup.style.display = 'none';
@@ -287,10 +301,26 @@ addTime.addEventListener('click', () => {
   popup.style.display = 'block';
 });
 
-const saveTimesBtn = document.querySelector('#save-times');
 saveTimesBtn.addEventListener('click', () => {
+  // Update the displayed times list with the modified times
+  timesList.innerHTML = '';
+  recordedTimes.forEach(time => {
+    const timesListItem = document.createElement('li');
+    timesListItem.textContent = time;
+    timesList.prepend(timesListItem);
+  });
+
+
+  hideElement(document.querySelector('.manage-times-container'));
+  hideElement(addTime);
+  hideElement(saveTimesBtn);
+
+  showElement(modifyTimes);
+  showElement(timesList);
+
   submitTimeBtn.click();
 });
+
 //                                                 Runner Positions Functions                                                                //
 
 recordRunner.addEventListener('click', async () => {
@@ -299,7 +329,7 @@ recordRunner.addEventListener('click', async () => {
   const position = runnersPosition.value;
 
   if (!position || !idNumber) {
-    errorMessage.textContent = 'Please enter both position and ID number';
+    errorMessageDisplay('Please enter both position and ID number', 'error');
     return;
   }
 
@@ -307,7 +337,7 @@ recordRunner.addEventListener('click', async () => {
   const targetedRunner = runnersData.find(runner => runner[0] === idNumber);
 
   if (!targetedRunner) {
-    errorMessage.textContent = 'Runner ID not found';
+    errorMessageDisplay('Runner ID not found', 'error');
     return;
   }
 
@@ -324,17 +354,18 @@ recordRunner.addEventListener('click', async () => {
     const result = await response.json();
 
     if (!response.ok) {
-      errorMessage.textContent = result.message;
+      errorMessageDisplay(result.message, 'error');
       localStorage.setItem('runners', JSON.stringify(recordedRunners));
       return;
     }
     console.log('Runners submitted successfully:', runnersInfo);
+    errorMessageDisplay('Runners submitted successfully:', 'success');
     runnersID.value = '';
     runnersPosition.value = '';
     updateRunnersList(result.runners);
   } catch (error) {
     console.error('Error:', error);
-    errorMessage.textContent = 'Error submitting runner, try again';
+    errorMessageDisplay('Error submitting runner, it is currently stored locally, please try again out of offline mode', 'error');
     localStorage.setItem('runners', JSON.stringify(recordedRunners));
   }
 });
@@ -363,7 +394,7 @@ async function getResults() {
 
 function displayResults(data) {
   if (!data.status || !data.hasResults || data.hasResults.length === 0) {
-    errorMessage.textContent = 'No results available yet';
+    errorMessageDisplay('No results available yet', 'info');
     return;
   }
 
@@ -395,11 +426,12 @@ function displayResults(data) {
 overallResultsBtn.addEventListener('click', async () => {
   clearContent();
   errorMessage.textContent = '';
+  showElement(document.querySelector('#result-container'));
   try {
     const resultsData = await getResults();
     displayResults(resultsData);
   } catch (error) {
-    errorMessage.textContent = 'Error loading results';
+    errorMessageDisplay('Error loading results', 'error');
   }
 });
 

@@ -1,3 +1,6 @@
+
+import { errorMessageDisplay } from './index.js';
+
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -9,6 +12,7 @@ const runnersRaceDetails = {
   runnersSaved: [],
   resultsSaved: [],
 };
+
 
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
