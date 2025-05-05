@@ -196,11 +196,19 @@ recordTimeBtn.addEventListener('click', () => {
   timesList.prepend(timesListItem);
 
   recordedTimes.push(time);
+
+  errorMessageDisplay('Time recorded successfully', 'success');
   console.log('Recorded times:', recordedTimes);
 });
 
 submitTimeBtn.addEventListener('click', async () => {
   errorMessage.textContent = '';
+
+  if (recordedTimes.length === 0) {
+    errorMessageDisplay('No times recorded to submit', 'error');
+    return;
+  }
+
   stopBtn.click();
 
   try {
@@ -211,14 +219,19 @@ submitTimeBtn.addEventListener('click', async () => {
     });
 
     const result = await response.json();
+
     if (!response.ok) {
       errorMessageDisplay(result.message, 'error');
       localStorage.setItem('runners', JSON.stringify(recordedTimes));
       return;
     }
+
     console.log('Times submitted successfully:', result);
     errorMessageDisplay('Times submitted successfully:', 'success');
 
+    if (localStorage.getItem('times')) {
+      localStorage.removeItem('times');
+    }
 
     hideElement(document.querySelector('.stopwatch'));
     showElement(modifyTimes);
@@ -274,16 +287,18 @@ function displayTimes() {
 popupDone.addEventListener('click', () => {
   const newTime = timeInput.value.trim();
   if (!/^\d{1,2}:\d{2}:\d{2}:\d{3}$/.test(newTime)) {
-    errorMessage.textContent = 'Invalid format. Please use hh:mm:ss:ms';
+    errorMessageDisplay('Invalid format. Please use hh:mm:ss:ms', 'error');
     return;
   }
 
   if (editIndex !== null) {
     recordedTimes[editIndex] = newTime;
+    errorMessageDisplay('Time updated successfully', 'success');
     editIndex = null;
   } else {
     recordedTimes.push(newTime);
     recordedTimes.sort();
+    errorMessageDisplay('Time added successfully', 'success');
   }
 
   popup.style.display = 'none';
@@ -333,6 +348,16 @@ recordRunner.addEventListener('click', async () => {
     return;
   }
 
+  if (isNaN(position) || position <= 0) {
+    errorMessageDisplay('Position must be a positive number', 'error');
+    return;
+  }
+
+  if (isNaN(idNumber)) {
+    errorMessageDisplay('ID must be a number', 'error');
+    return;
+  }
+
   await getRunners();
   const targetedRunner = runnersData.find(runner => runner[0] === idNumber);
 
@@ -358,11 +383,18 @@ recordRunner.addEventListener('click', async () => {
       localStorage.setItem('runners', JSON.stringify(recordedRunners));
       return;
     }
+
     console.log('Runners submitted successfully:', runnersInfo);
     errorMessageDisplay('Runners submitted successfully:', 'success');
+
     runnersID.value = '';
     runnersPosition.value = '';
+
     updateRunnersList(result.runners);
+
+    if (localStorage.getItem('runners')) {
+      localStorage.removeItem('runners');
+    }
   } catch (error) {
     console.error('Error:', error);
     errorMessageDisplay('Error submitting runner, it is currently stored locally, please try again out of offline mode', 'error');
@@ -380,7 +412,7 @@ function updateRunnersList(runners) {
   });
 }
 
-//                                                 Overall Results Functions                                                                //
+//   Overall Result Functions                                                     //
 async function getResults() {
   try {
     const response = await fetch('/get-results');
@@ -435,6 +467,83 @@ overallResultsBtn.addEventListener('click', async () => {
   }
 });
 
+// Load Local Storage //
+function getLocalStorageData() {
+  try {
+    const savedTimes = localStorage.getItem('times');
+    const savedRunners = localStorage.getItem('runners');
+
+    if (savedTimes) {
+      recordedTimes = JSON.parse(savedTimes);
+      recordedTimes.forEach(time => {
+        const timesListItem = document.createElement('li');
+        timesListItem.textContent = time;
+        timesList.prepend(timesListItem);
+      });
+
+      if (recordedTimes.length > 0) {
+        showElement(modifyTimes);
+        errorMessageDisplay('Loaded locally saved times', 'info');
+      }
+    }
+
+    if (savedRunners) {
+      recordedRunners.length = 0;
+      JSON.parse(savedRunners).forEach(runner => {
+        recordedRunners.push(runner);
+        const listItem = document.createElement('li');
+        listItem.textContent = `Position ${runner.position}: ${runner.name} (ID: ${runner.id})`;
+        runnersList.prepend(listItem);
+      });
+
+      if (recordedRunners.length > 0) {
+        errorMessageDisplay('Loaded locally saved runners', 'info');
+      }
+    }
+  } catch (error) {
+    console.error('Error loading localStorage data:', error);
+    errorMessageDisplay('Error loading localStorage data:', 'error');
+  }
+}
+
+// Replace your current syncLocalStorageToServer function with this:
+async function syncLocalStorageToServer() {
+  if (!navigator.onLine) return;
+
+  try {
+    // Sync times if they exist
+    if (localStorage.getItem('times')) {
+      const times = JSON.parse(localStorage.getItem('times'));
+      await fetch('/submit-timings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ times }),
+      });
+      localStorage.removeItem('times');
+    }
+
+    // Sync runners if they exist
+    if (localStorage.getItem('runners')) {
+      const runners = JSON.parse(localStorage.getItem('runners'));
+      await fetch('/submit-runners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ runners }),
+      });
+      localStorage.removeItem('runners');
+    }
+
+    // Force refresh the results display
+    if (document.querySelector('#result-container').style.display === 'block') {
+      const resultsData = await getResults();
+      displayResults(resultsData);
+    }
+  } catch (error) {
+    console.error('Sync error:', error);
+  }
+}
+
+
 // Service Worker Registration //
 async function registerServiceWorker() {
   if (navigator.serviceWorker) {
@@ -442,6 +551,17 @@ async function registerServiceWorker() {
   }
 }
 
+// Update your load event listener to this:
 window.addEventListener('load', () => {
   registerServiceWorker();
+  getLocalStorageData();
+
+  if (navigator.onLine) {
+    syncLocalStorageToServer().then(() => {
+      // After sync completes, show results if we have data
+      if (recordedTimes.length > 0 || recordedRunners.length > 0) {
+        overallResultsBtn.click();
+      }
+    });
+  }
 });

@@ -1,6 +1,3 @@
-
-import { errorMessageDisplay } from './index.js';
-
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -30,6 +27,7 @@ app.post('/submit-timings', (req, res) => {
         message: 'No time data provided',
       });
     }
+
     const times = req.body.times;
     runnersRaceDetails.timeSaved = [...times]; // The '...' operator is used to remove the outer array brackets
 
@@ -46,7 +44,7 @@ app.post('/submit-timings', (req, res) => {
     console.error('Error:', error.message);
     res.status(400).json({
       status: 'error',
-      message: error.message,
+      message: 'Server error: ' + error.message,
     });
   }
 });
@@ -79,14 +77,13 @@ app.post('/submit-runners', (req, res) => {
     runnersRaceDetails.runnersSaved.push(...newRunner); // The '...' operator is used to remove the outer array brackets
 
     console.log('Current runners:', runnersRaceDetails.runnersSaved);
+    checkCompleteData();
 
     res.json({
       status: 'success',
       message: 'Runners received successfully',
       runners: runnersRaceDetails.runnersSaved,
     });
-
-    checkCompleteData();
   } catch (error) {
     console.error('Error:', error.message);
     res.status(400).json({
@@ -105,7 +102,8 @@ app.get('/get-runners', (req, res) => {
 
 function checkCompleteData() {
   if (runnersRaceDetails.runnersSaved.length > 0 &&
-    runnersRaceDetails.timeSaved.length > 0) {
+    runnersRaceDetails.timeSaved.length > 0 &&
+    runnersRaceDetails.runnersSaved.length === runnersRaceDetails.timeSaved.length) {
     status = true;
     console.log('All data is complete');
     runnersRaceDetails.resultsSaved = [];

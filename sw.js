@@ -1,17 +1,10 @@
 
+const API_CACHE = 'api-cache';
+const CACHE = 'hsww';
+
 function interceptFetch(evt) {
   evt.respondWith(handleFetch(evt.request));
   evt.waitUntil(updateCache(evt.request));
-}
-
-async function handleFetch(request) {
-  if (request.method === 'POST') {
-    return fetch(request);
-  }
-
-  const c = await caches.open(CACHE);
-  const cachedCopy = await c.match(request);
-  return cachedCopy || Promise.reject(new Error('no-match'));
 }
 
 async function updateCache(request) {
@@ -23,7 +16,22 @@ async function updateCache(request) {
   return c.put(request, response);
 }
 
-const CACHE = 'hsww';
+async function handleFetch(request) {
+  if (request.method === 'POST') return fetch(request);
+
+  // Check cache for API request //
+  if (request.url.includes('/get-results')) {
+    const cache = await caches.open(API_CACHE);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+  }
+
+
+  const cache = await caches.open(CACHE);
+  const cachedCopy = await cache.match(request);
+  return cachedCopy || fetch(request);
+}
+
 
 const CACHEABLE = [
   './',
@@ -31,7 +39,7 @@ const CACHEABLE = [
   './sw.js',
   './index.js',
   './style.css',
-  './runnerData.csv',
+  './runners.csv',
 ];
 
 async function prepareCache() {
