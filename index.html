@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>RUN PARK</title>
-        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="style.css">
         <script src="index.js" defer> </script>
     </head>
 
@@ -15,7 +15,7 @@
             <nav class="nav-container"></nav>
             <button id="runners-results"> Overall Results</button>
                 <button class="signin-button" id="sign-in">Sign In</button>
-                <button class="signin-button" id="sign-out">Sign Out</button>
+                <button class="signin-button" id="sign-out" style="display: none">Sign Out</button>
             </nav>
 
             <nav class="volunteer-nav" style="display: none;">
@@ -43,21 +43,25 @@
 
                 <section class="position-container">
                     <h3>Recorded Times</h3>
-                    <ol id="times-display">
+                    <ol class="position-times" id="times-display">
                     <!-- Times and positions are add here -->
                     </ol>
                 </section>
 
-                <button id="edit-times" style="display: none;">Edit Times</button>
+                <button id="modify-times" style="display: none">Modify Times</button>
                 <section class="manage-times-container" style="display: none">
-                    <button id="delete-time">Delete Time</button>
-                    <button id="clear-time">Clear Time</button>
+                    <ul id="times-display"></ul>
                     <button id="add-time"> Add Time</button>
                     <button id="save-times">Save Time</button>
+
+                    <section class="pop-up" id="time-popup">
+                        <label for="time-input">Time (hh:mm:ss:ms)</label>
+                        <input type="text" id="time-input" placeholder="00:00:00:000">
+                        <button id="popup-done">Done</button>
+                        <button id="popup-cancel">Cancel</button>
+                    </section>
                 </section>
             </section>
-
-
 
 <!-- Runners Positions Submission -->
             <section class="section" id="runners-container">
@@ -76,7 +80,7 @@ Runner</button>
 
                 <section class="runners-container">
                     <h3>Recorded Submissions</h3>
-                    <ul id="runners-display">
+                    <ul class="position-times" id="runners-display">
                     <!-- Runner's ID and Name -->
                     </ul>
                 </section>
@@ -100,7 +104,7 @@ Runner</button>
             </section>
 
 <!-- Error Messages -->
-            <section class="section" id="error-container">
+            <section id="error-container">
                 <h2>Errors</h2>
                 <p><span id="error-message"> </span></p>
             </section> 

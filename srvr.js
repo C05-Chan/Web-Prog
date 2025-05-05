@@ -100,20 +100,21 @@ app.get('/get-runners', (req, res) => {
 
 function checkCompleteData() {
   if (runnersRaceDetails.runnersSaved.length > 0 &&
-    runnersRaceDetails.timeSaved.length > 0 &&
-    runnersRaceDetails.runnersSaved.length === runnersRaceDetails.timeSaved.length) {
+    runnersRaceDetails.timeSaved.length > 0) {
     status = true;
     console.log('All data is complete');
-    runnersRaceDetails.resultsSaved.length = 0;
+    runnersRaceDetails.resultsSaved = [];
 
-    for (const runner of runnersRaceDetails.runnersSaved) {
-      const posIndex = runner.position - 1;
-      if (posIndex >= 0 && posIndex === runnersRaceDetails.timeSaved.length) {
+    for (let i = 0; i < runnersRaceDetails.runnersSaved.length; i++) {
+      const runner = runnersRaceDetails.runnersSaved[i];
+      const timeIndex = runner.position - 1;
+
+      if (timeIndex >= 0 && timeIndex < runnersRaceDetails.timeSaved.length) {
         runnersRaceDetails.resultsSaved.push({
           id: runner.id,
           name: runner.name,
           position: runner.position,
-          time: runnersRaceDetails.timeSaved[posIndex],
+          time: runnersRaceDetails.timeSaved[timeIndex],
         });
       }
     }
@@ -122,12 +123,9 @@ function checkCompleteData() {
 
 
 app.get('/get-results', (req, res) => {
-  // Sort results by position before sending
-  const sortedResults = [...runnersRaceDetails.resultsSaved].sort((a, b) => a.position - b.position);
-
   res.json({
     status,
-    hasResults: sortedResults,
+    hasResults: runnersRaceDetails.resultsSaved,
   });
 });
 

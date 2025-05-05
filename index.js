@@ -26,12 +26,17 @@ const recordTimeBtn = document.querySelector('#record-time');
 const submitTimeBtn = document.querySelector('#submit-times');
 
 const timesList = document.querySelector('#times-display');
+const timesManagementList = document.querySelector('#times-management-list');
 
-const editTimes = document.querySelector('#edit-times');
-const deleteTime = document.querySelector('#delete-time');
-const changeTime = document.querySelector('#change-time');
+const modifyTimes = document.querySelector('#modify-times');
 const addTime = document.querySelector('#add-time');
 const saveTime = document.querySelector('#save-time');
+const popup = document.getElementById('time-popup');
+const timeInput = document.getElementById('time-input');
+const popupDone = document.getElementById('popup-done');
+const popupCancel = document.getElementById('popup-cancel');
+
+let editIndex = null;
 
 
 // Runner Positions //
@@ -46,6 +51,7 @@ const overallResults = document.querySelector('#results-table');
 
 // Functions to handle navigation between sections //
 function clearContent() {
+  errorMessage.textContent = '';
   document.querySelectorAll('.section').forEach((content) => {
     // content.classList.add('hidden');
     content.style.display = 'none';
@@ -63,6 +69,36 @@ function hideElement(e) {
   e.style.display = 'none';
 }
 
+// Nav Bar Functions //
+signInBtn.addEventListener('click', () => {
+  clearContent();
+
+  showElement(document.querySelector('.volunteer-nav'));
+  showElement(signOutBtn);
+
+  hideElement(signInBtn);
+});
+
+signOutBtn.addEventListener('click', () => {
+  clearContent();
+
+  showElement(signInBtn);
+
+  hideElement(signOutBtn);
+  hideElement(document.querySelector('.volunteer-nav'));
+});
+
+timerBtn.addEventListener('click', () => {
+  clearContent();
+  showElement(document.querySelector('#timer-container'));
+});
+
+positionsBtn.addEventListener('click', () => {
+  clearContent();
+  showElement(document.querySelector('#runners-container'));
+});
+
+// Get Runners CSV File //
 function getRunners() {
   return fetch('runners.csv')
     .then(response => response.text())
@@ -72,12 +108,13 @@ function getRunners() {
       return runnersData;
     })
     .catch(err => {
+      errorMessage.textContent('Error loading CSV');
       console.error('Error loading CSV:', err);
       return [];
     });
 }
 
-//                                                                             Timer Functions                                                                    //
+//                                                                   Timer Functions                                                                    //
 
 function updateTimer() {
   currentMilliseconds++;
@@ -168,15 +205,92 @@ submitTimeBtn.addEventListener('click', async () => {
     console.log('Times submitted successfully:', result);
 
     hideElement(document.querySelector('.stopwatch'));
-    showElement(editTimes);
+    showElement(modifyTimes);
   } catch (error) {
     console.error('Error:', error);
-    errorMessage.textContent = 'Error submitting times, try again';
+    errorMessage.textContent = 'Error submitting times, it is currently stored locally, please try again out of offline mode';
     localStorage.setItem('times', JSON.stringify(recordedTimes));
+    showElement(modifyTimes);
   }
 });
 
+modifyTimes.addEventListener('click', () => {
+  showElement(document.querySelector('.manage-times-container'));
+  hideElement(modifyTimes);
+  displayTimes();
+});
 
+// Modify the displayTimes function to ensure buttons are visible
+function displayTimes() {
+  timesManagementList.innerHTML = '';
+
+  recordedTimes.forEach((time, index) => {
+    const listItem = document.createElement('li');
+    listItem.style.display = 'flex'; // Add flex display
+    listItem.style.alignItems = 'center'; // Center items vertically
+    listItem.style.gap = '10px'; // Add some spacing
+
+    const timeSpan = document.createElement('span');
+    timeSpan.textContent = time;
+    listItem.appendChild(timeSpan);
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.style.padding = '5px 10px'; // Add some padding
+    editBtn.addEventListener('click', () => {
+      editIndex = index;
+      timeInput.value = time;
+      popup.style.display = 'block';
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.style.padding = '5px 10px'; // Add some padding
+    deleteBtn.addEventListener('click', () => {
+      recordedTimes.splice(index, 1);
+      displayTimes();
+    });
+
+    listItem.appendChild(editBtn);
+    listItem.appendChild(deleteBtn);
+    timesManagementList.appendChild(listItem);
+  });
+}
+
+popupDone.addEventListener('click', () => {
+  const newTime = timeInput.value.trim();
+  if (!/^\d{2}:\d{2}:\d{2}:\d{3}$/.test(newTime)) {
+    errorMessage.textContent = 'Invalid format. Please use hh:mm:ss:ms';
+    return;
+  }
+
+  if (editIndex !== null) {
+    recordedTimes[editIndex] = newTime;
+    editIndex = null;
+  } else {
+    recordedTimes.push(newTime);
+    recordedTimes.sort(); // You can replace this with custom time sort
+  }
+
+  popup.style.display = 'none';
+  displayTimes();
+});
+
+popupCancel.addEventListener('click', () => {
+  popup.style.display = 'none';
+  editIndex = null;
+});
+
+addTime.addEventListener('click', () => {
+  editIndex = null;
+  timeInput.value = '';
+  popup.style.display = 'block';
+});
+
+const saveTimesBtn = document.querySelector('#save-times');
+saveTimesBtn.addEventListener('click', () => {
+  submitTimeBtn.click();
+});
 //                                                 Runner Positions Functions                                                                //
 
 recordRunner.addEventListener('click', async () => {
@@ -235,46 +349,59 @@ function updateRunnersList(runners) {
   });
 }
 
-// async function getResults() {
-//   try {
-//     const response = await fetch('/get-results');
-//     const data = await response.json();
+//                                                 Overall Results Functions                                                                //
+async function getResults() {
+  try {
+    const response = await fetch('/get-results');
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching results:', error);
+    throw error;
+  }
+}
 
-//     if (!data.hasResults || data.hasResults.length === 0) {
-//       errorMessage.textContent = 'No results available yet';
-//       return;
-//     }
+function displayResults(data) {
+  if (!data.status || !data.hasResults || data.hasResults.length === 0) {
+    errorMessage.textContent = 'No results available yet';
+    return;
+  }
 
-//     if (data.status && data.hasResults.length > 0) {
-//       const tbody = overallResults.querySelector('tbody');
-//       tbody.innerHTML = ''; // Clear existing rows
+  const tbody = overallResults.querySelector('tbody');
+  tbody.innerHTML = '';
 
-//       // Sort results by position
-//       const sortedResults = [...data.hasResults].sort((a, b) => a.position - b.position);
+  const sortedResults = data.hasResults.sort((a, b) => a.position - b.position);
 
-//       sortedResults.forEach(result => {
-//         const row = document.createElement('tr');
+  for (let i = 0; i < sortedResults.length; i++) {
+    const result = sortedResults[i];
+    const row = document.createElement('tr');
 
-//         const positionCell = document.createElement('td');
-//         positionCell.textContent = result.position;
+    const positionCell = document.createElement('td');
+    positionCell.textContent = result.position;
 
-//         const nameCell = document.createElement('td');
-//         nameCell.textContent = result.name;
+    const nameCell = document.createElement('td');
+    nameCell.textContent = result.name;
 
-//         const timeCell = document.createElement('td');
-//         timeCell.textContent = result.time;
+    const timeCell = document.createElement('td');
+    timeCell.textContent = result.time;
 
-//         row.appendChild(positionCell);
-//         row.appendChild(nameCell);
-//         row.appendChild(timeCell);
-//         tbody.appendChild(row);
-//       });
-//     }
-//   } catch (error) {
-//     console.error('Error fetching results:', error);
-//     errorMessage.textContent = 'Error loading results';
-//   }
-// }
+    row.appendChild(positionCell);
+    row.appendChild(nameCell);
+    row.appendChild(timeCell);
+    tbody.appendChild(row);
+  }
+}
+
+overallResultsBtn.addEventListener('click', async () => {
+  clearContent();
+  errorMessage.textContent = '';
+  try {
+    const resultsData = await getResults();
+    displayResults(resultsData);
+  } catch (error) {
+    errorMessage.textContent = 'Error loading results';
+  }
+});
 
 // Service Worker Registration //
 async function registerServiceWorker() {

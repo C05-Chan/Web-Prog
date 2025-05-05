@@ -23,23 +23,34 @@ h1 {
     margin: 0;
 }
 
-#position-times {
+.position-times{
     list-style-type: none;
 }
 
-#position-times li {
+.position-times li {
     padding: 5px;
     margin: 5px 0;
     background-color: #f4f4f4;
     border-radius: 5px;
 }
 
-.hidden {
-    display: none;
-  }
-
 #error-message {
     color: red;
     font-size: 1.2em;
     margin-top: 20px;
+}
+
+.section {
+    display: none;
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 1rem;
+    border: 2px solid #444;
+    z-index: 1000;
 }
