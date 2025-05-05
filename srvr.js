@@ -17,6 +17,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+
 app.post('/submit-timings', (req, res) => {
   try {
     if (!req.body?.times) {
@@ -120,7 +121,6 @@ function checkCompleteData() {
     }
   }
 }
-
 
 app.get('/get-results', (req, res) => {
   res.json({
