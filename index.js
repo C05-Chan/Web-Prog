@@ -4,54 +4,20 @@ let currentMilliseconds = 0;
 let runnersData = [];
 let recordedTimes = [];
 const recordedRunners = [];
-
-
-// Navigation Buttons //
-const signInBtn = document.querySelector('#sign-in');
-const signOutBtn = document.querySelector('#sign-out');
-const overallResultsBtn = document.querySelector('#runners-results');
-const timerBtn = document.querySelector('#timer');
-const positionsBtn = document.querySelector('#positions');
-
-// Error Message //
-const errorMessage = document.querySelector('#error-message');
-
-// Timer  //
-const stopwatchDisplay = document.querySelector('#stopwatch-display');
-const startBtn = document.querySelector('#start');
-const stopBtn = document.querySelector('#stop');
-const resetBtn = document.querySelector('#reset');
-const resumeBtn = document.querySelector('#resume');
-const recordTimeBtn = document.querySelector('#record-time');
-const submitTimeBtn = document.querySelector('#submit-times');
-
-const timesList = document.querySelector('#times-display');
-const timesManagementList = document.querySelector('#times-management-list');
-
-const modifyTimes = document.querySelector('#modify-times');
-const addTime = document.querySelector('#add-time');
-const saveTimesBtn = document.querySelector('#save-times');
-const popup = document.getElementById('time-popup');
-const timeInput = document.getElementById('time-input');
-const popupDone = document.getElementById('popup-done');
-const popupCancel = document.getElementById('popup-cancel');
-
 let editIndex = null;
 
+// Get all elements with #id //
+const el = {};
+const allElementsWithId = document.querySelectorAll('[id]');
 
-// Runner Positions //
-const runnersPosition = document.querySelector('#runner-position');
-const runnersID = document.querySelector('#runner-ID');
-const recordRunner = document.querySelector('#record-runner');
-
-const runnersList = document.querySelector('#runners-display');
-
-// Overall Results //
-const overallResults = document.querySelector('#results-table');
+allElementsWithId.forEach(element => {
+  const key = element.id.replace(/-/g, '_');
+  el[key] = element;
+});
 
 // Functions to handle navigation between sections //
 function clearContent() {
-  errorMessage.textContent = '';
+  el.error_message.textContent = '';
   document.querySelectorAll('.section').forEach((content) => {
     // content.classList.add('hidden');
     content.style.display = 'none';
@@ -76,38 +42,38 @@ function errorMessageDisplay(message, type) {
     { type: 'info', colour: 'blue' },
   ];
 
-  errorMessage.textContent = message;
+  el.error_message.textContent = message;
 
   const colour = errorColours.find(config => config.type === type);
-  errorMessage.style.color = colour ? colour.colour : 'black';
+  el.error_message.style.color = colour ? colour.colour : 'black';
 }
 
 
 // Nav Bar Functions //
-signInBtn.addEventListener('click', () => {
+el.sign_in.addEventListener('click', () => {
   clearContent();
 
   showElement(document.querySelector('.volunteer-nav'));
-  showElement(signOutBtn);
+  showElement(el.sign_out);
 
-  hideElement(signInBtn);
+  hideElement(el.sign_in);
 });
 
-signOutBtn.addEventListener('click', () => {
+el.sign_out.addEventListener('click', () => {
   clearContent();
 
-  showElement(signInBtn);
+  showElement(el.sign_in);
 
-  hideElement(signOutBtn);
+  hideElement(el.sign_out);
   hideElement(document.querySelector('.volunteer-nav'));
 });
 
-timerBtn.addEventListener('click', () => {
+el.timer.addEventListener('click', () => {
   clearContent();
   showElement(document.querySelector('#timer-container'));
 });
 
-positionsBtn.addEventListener('click', () => {
+el.positions.addEventListener('click', () => {
   clearContent();
   showElement(document.querySelector('#runners-container'));
 });
@@ -128,6 +94,21 @@ function getRunners() {
     });
 }
 
+// Generate random ID //
+
+function getClientId() {
+  const storage = sessionStorage; // This is a one time thing. Disappears when browser/ tab closes. (Good for testing, but for a real app, it would be stored in local storage)
+  try {
+    let clientId = storage.getItem('clientId');
+    if (!clientId) {
+      clientId = 'client-' + Math.random().toString(36).slice(2, 11);
+      storage.setItem('clientId', clientId);
+    }
+    return clientId;
+  } catch (error) {
+    return 'temp-' + Math.random().toString(36).slice(2, 11);
+  }
+}
 //                                                                   Timer Functions                                                                    //
 
 function updateTimer() {
@@ -137,63 +118,63 @@ function updateTimer() {
   const seconds = Math.floor((currentMilliseconds % 60000) / 1000);
   const ms = currentMilliseconds % 1000;
 
-  stopwatchDisplay.textContent = `${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}:${ms < 10 ? '00' + ms : ms < 100 ? '0' + ms : ms}`;
+  el.stopwatch_display.textContent = `${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}:${ms < 10 ? '00' + ms : ms < 100 ? '0' + ms : ms}`;
 }
 
-startBtn.addEventListener('click', () => {
+el.start.addEventListener('click', () => {
   if (!timerInterval) {
     currentMilliseconds = 0;
     timerInterval = setInterval(updateTimer, 1);
   }
-  hideElement(startBtn);
-  showElement(stopBtn);
-  showElement(recordTimeBtn);
-  showElement(submitTimeBtn);
+  hideElement(el.start);
+  showElement(el.stop);
+  showElement(el.record_time);
+  showElement(el.submit_times);
 });
 
-stopBtn.addEventListener('click', () => {
+el.stop.addEventListener('click', () => {
   clearInterval(timerInterval);
   timerInterval = null;
 
-  hideElement(stopBtn);
-  hideElement(recordTimeBtn);
-  showElement(resumeBtn);
-  showElement(resetBtn);
+  hideElement(el.stop);
+  hideElement(el.record_time);
+  showElement(el.resume);
+  showElement(el.reset);
 });
 
-resumeBtn.addEventListener('click', () => {
+el.resume.addEventListener('click', () => {
   if (!timerInterval) {
     timerInterval = setInterval(updateTimer, 1);
   }
 
-  hideElement(resumeBtn);
-  hideElement(resetBtn);
-  showElement(stopBtn);
+  hideElement(el.resume);
+  hideElement(el.reset);
+  showElement(el.stop);
 });
 
-resetBtn.addEventListener('click', () => {
+el.reset.addEventListener('click', () => {
   clearInterval(timerInterval);
   timerInterval = null;
   currentMilliseconds = 0;
   recordedTimes = [];
 
-  stopwatchDisplay.textContent = '00:00:00:000';
-  timesList.innerHTML = '';
+  el.stopwatch_display.textContent = '00:00:00:000';
+  el.times_list.innerHTML = '';
 
-  showElement(startBtn);
-  hideElement(stopBtn);
-  hideElement(resumeBtn);
-  hideElement(resetBtn);
-  hideElement(recordTimeBtn);
-  hideElement(submitTimeBtn);
+  showElement(el.start);
+  hideElement(el.stop);
+  hideElement(el.resume);
+  hideElement(el.reset);
+  hideElement(el.record_time);
+  hideElement(el.submit_times);
 });
 
-recordTimeBtn.addEventListener('click', () => {
+el.record_time.addEventListener('click', () => {
   const timesListItem = document.createElement('li');
-  const time = stopwatchDisplay.textContent;
+  const time = el.stopwatch_display.textContent;
 
   timesListItem.textContent = time;
-  timesList.prepend(timesListItem);
+  el.times_list.prepend(timesListItem);
 
   recordedTimes.push(time);
 
@@ -201,15 +182,15 @@ recordTimeBtn.addEventListener('click', () => {
   console.log('Recorded times:', recordedTimes);
 });
 
-submitTimeBtn.addEventListener('click', async () => {
-  errorMessage.textContent = '';
+el.submit_times.addEventListener('click', async () => {
+  el.error_message.textContent = '';
 
   if (recordedTimes.length === 0) {
     errorMessageDisplay('No times recorded to submit', 'error');
     return;
   }
 
-  stopBtn.click();
+  el.stop.click();
 
   try {
     const response = await fetch('/submit-timings', {
@@ -234,24 +215,24 @@ submitTimeBtn.addEventListener('click', async () => {
     }
 
     hideElement(document.querySelector('.stopwatch'));
-    showElement(modifyTimes);
+    showElement(el.modify_times);
   } catch (error) {
     console.error('Error:', error);
     errorMessageDisplay('Error submitting times, it is currently stored locally, please try again out of offline mode', 'error');
     localStorage.setItem('times', JSON.stringify(recordedTimes));
-    showElement(modifyTimes);
+    showElement(el.modify_times);
   }
 });
 
-modifyTimes.addEventListener('click', () => {
+el.modify_times.addEventListener('click', () => {
   showElement(document.querySelector('.manage-times-container'));
-  hideElement(modifyTimes);
-  hideElement(timesList);
+  hideElement(el.modify_times);
+  hideElement(el.times_list);
   displayTimes();
 });
 
 function displayTimes() {
-  timesManagementList.innerHTML = '';
+  el.times_management_list.innerHTML = '';
 
   recordedTimes.forEach((time, index) => {
     const wrapper = document.createElement('section');
@@ -264,8 +245,8 @@ function displayTimes() {
 
     editTime.addEventListener('click', () => {
       editIndex = index;
-      timeInput.value = time;
-      popup.style.display = 'block';
+      el.time_input.value = time;
+      el.el.popup.style.display = 'block';
     });
 
 
@@ -280,12 +261,12 @@ function displayTimes() {
     wrapper.appendChild(span);
     wrapper.appendChild(editTime);
     wrapper.appendChild(deleteTime);
-    timesManagementList.appendChild(wrapper);
+    el.times_management_list.appendChild(wrapper);
   });
 }
 
-popupDone.addEventListener('click', () => {
-  const newTime = timeInput.value.trim();
+el.popup_done.addEventListener('click', () => {
+  const newTime = el.time_input.value.trim();
   if (!/^\d{1,2}:\d{2}:\d{2}:\d{3}$/.test(newTime)) {
     errorMessageDisplay('Invalid format. Please use hh:mm:ss:ms', 'error');
     return;
@@ -301,47 +282,47 @@ popupDone.addEventListener('click', () => {
     errorMessageDisplay('Time added successfully', 'success');
   }
 
-  popup.style.display = 'none';
+  el.el.popup.style.display = 'none';
   displayTimes();
 });
 
-popupCancel.addEventListener('click', () => {
-  popup.style.display = 'none';
+el.popup_cancel.addEventListener('click', () => {
+  el.popup.style.display = 'none';
   editIndex = null;
 });
 
-addTime.addEventListener('click', () => {
+el.add_time.addEventListener('click', () => {
   editIndex = null;
-  timeInput.value = '';
-  popup.style.display = 'block';
+  el.time_input.value = '';
+  el.popup.style.display = 'block';
 });
 
-saveTimesBtn.addEventListener('click', () => {
+el.save_times.addEventListener('click', () => {
   // Update the displayed times list with the modified times
-  timesList.innerHTML = '';
+  el.times_list.innerHTML = '';
   recordedTimes.forEach(time => {
     const timesListItem = document.createElement('li');
     timesListItem.textContent = time;
-    timesList.prepend(timesListItem);
+    el.times_list.prepend(timesListItem);
   });
 
 
   hideElement(document.querySelector('.manage-times-container'));
-  hideElement(addTime);
-  hideElement(saveTimesBtn);
+  hideElement(el.add_time);
+  hideElement(el.save_times);
 
-  showElement(modifyTimes);
-  showElement(timesList);
+  showElement(el.modify_times);
+  showElement(el.times_list);
 
-  submitTimeBtn.click();
+  el.submit_times.click();
 });
 
 //                                                 Runner Positions Functions                                                                //
 
-recordRunner.addEventListener('click', async () => {
-  errorMessage.textContent = '';
-  const idNumber = runnersID.value;
-  const position = runnersPosition.value;
+el.record_runner.addEventListener('click', async () => {
+  el.error_message.textContent = '';
+  const idNumber = el.runner_ID.value;
+  const position = el.runner_position.value;
 
   if (!position || !idNumber) {
     errorMessageDisplay('Please enter both position and ID number', 'error');
@@ -387,8 +368,8 @@ recordRunner.addEventListener('click', async () => {
     console.log('Runners submitted successfully:', runnersInfo);
     errorMessageDisplay('Runners submitted successfully:', 'success');
 
-    runnersID.value = '';
-    runnersPosition.value = '';
+    el.runner_ID.value = '';
+    el.runner_position.value = '';
 
     updateRunnersList(result.runners);
 
@@ -403,12 +384,12 @@ recordRunner.addEventListener('click', async () => {
 });
 
 function updateRunnersList(runners) {
-  runnersList.innerHTML = '';
+  el.runners_list.innerHTML = '';
 
   runners.forEach(runner => {
     const listItem = document.createElement('li');
     listItem.textContent = `Position ${runner.position}: ${runner.name} (ID: ${runner.id})`;
-    runnersList.prepend(listItem);
+    el.runners_list.prepend(listItem);
   });
 }
 
@@ -430,7 +411,7 @@ function displayResults(data) {
     return;
   }
 
-  const tbody = overallResults.querySelector('tbody');
+  const tbody = el.results_table.querySelector('tbody');
   tbody.innerHTML = '';
 
   const sortedResults = data.hasResults.sort((a, b) => a.position - b.position);
@@ -455,9 +436,9 @@ function displayResults(data) {
   }
 }
 
-overallResultsBtn.addEventListener('click', async () => {
+el.runners_results.addEventListener('click', async () => {
   clearContent();
-  errorMessage.textContent = '';
+  el.error_message.textContent = '';
   showElement(document.querySelector('#result-container'));
   try {
     const resultsData = await getResults();
@@ -478,11 +459,11 @@ function getLocalStorageData() {
       recordedTimes.forEach(time => {
         const timesListItem = document.createElement('li');
         timesListItem.textContent = time;
-        timesList.prepend(timesListItem);
+        el.times_list.prepend(timesListItem);
       });
 
       if (recordedTimes.length > 0) {
-        showElement(modifyTimes);
+        showElement(el.modify_times);
         errorMessageDisplay('Loaded locally saved times', 'info');
       }
     }
@@ -493,7 +474,7 @@ function getLocalStorageData() {
         recordedRunners.push(runner);
         const listItem = document.createElement('li');
         listItem.textContent = `Position ${runner.position}: ${runner.name} (ID: ${runner.id})`;
-        runnersList.prepend(listItem);
+        el.runners_list.prepend(listItem);
       });
 
       if (recordedRunners.length > 0) {
@@ -514,11 +495,13 @@ async function syncLocalStorageToServer() {
     // Sync times if they exist
     if (localStorage.getItem('times')) {
       const times = JSON.parse(localStorage.getItem('times'));
+
       await fetch('/submit-timings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ times }),
       });
+
       localStorage.removeItem('times');
     }
 
@@ -533,7 +516,6 @@ async function syncLocalStorageToServer() {
       localStorage.removeItem('runners');
     }
 
-    // Force refresh the results display
     if (document.querySelector('#result-container').style.display === 'block') {
       const resultsData = await getResults();
       displayResults(resultsData);
@@ -560,7 +542,7 @@ window.addEventListener('load', () => {
     syncLocalStorageToServer().then(() => {
       // After sync completes, show results if we have data
       if (recordedTimes.length > 0 || recordedRunners.length > 0) {
-        overallResultsBtn.click();
+        el.runners_results.click();
       }
     });
   }

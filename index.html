@@ -5,7 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>RUN PARK</title>
         <link rel="stylesheet" href="style.css">
+        <link rel="manifest" href="./manifest.json">
         <script src="index.js" defer> </script>
+
     </head>
 
     <body>
@@ -43,7 +45,7 @@
 
                 <section class="position-container">
                     <h3>Recorded Times</h3>
-                    <ol class="position-times" id="times-display">
+                    <ol class="position-times" id="times-list">
                     <!-- Times and positions are added here -->
                     </ol>
                 </section>
@@ -56,10 +58,10 @@
                         <button id="add-time">Add Time</button>
                         <button id="save-times">Save Times</button>  
 
-                        <section class="pop-up" id="time-popup">
+                        <section class="popup" id="time-popup">
                             <label for="time-input">Time (hh:mm:ss:ms)</label>
                             <input type="text" id="time-input" placeholder="00:00:00:000">
-                            <button id="popup-done">Done</button>
+                            <button id="saveTimesBtn">Done</button>
                             <button id="popup-cancel">Cancel</button>
                         </section>
                     </section>
@@ -82,7 +84,7 @@ Runner</button>
 
                 <section class="runners-container">
                     <h3>Recorded Submissions</h3>
-                    <ul class="position-times" id="runners-display">
+                    <ul class="position-times" id="runners-list">
                     <!-- Runner's ID and Name -->
                     </ul>
                 </section>

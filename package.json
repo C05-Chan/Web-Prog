@@ -5,12 +5,15 @@
   "main": "srvr.js",
   "dependencies": {
     "express": "^4.21.2",
+    "install": "^0.13.0",
+    "npm": "^11.3.0",
+    "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   },
   "scripts": {
     "test": "node --watch srvr.js",
     "start": "node srvr.js",
-    "setup": "npm install express",
+    "setup": "npm install express npm i sqlite npm install sqlite3",
     "config": ""
   },
   "repository": {
