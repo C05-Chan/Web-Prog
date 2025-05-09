@@ -8,13 +8,12 @@ self.addEventListener('install', event => {
       await cache.addAll([
         './',
         './index.html',
-        './sw.js',
         './index.js',
         './style.css',
-        './runners.csv',
         './manifest.json',
-        './placeholder_192.png',
-        './placeholder_512.png',
+        './images/placeholder_192.png',
+        './images/placeholder_512.png',
+        '../runners.csv',
       ]);
     })());
 });
@@ -22,12 +21,17 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
 
+  if (event.request.method === 'POST') {
+    return;
+  }
+
   if (request.url.includes('/get-results')) {
     event.respondWith(
       fetch(request)
         .then(response => {
+          const responseClone = response.clone();
           caches.open(API_CACHE).then(cache => {
-            cache.put(request, response.clone());
+            cache.put(request, responseClone);
           });
           return response;
         })
@@ -39,8 +43,9 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(request)
       .then(response => {
+        const responseClone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
-          cache.put(request, response.clone());
+          cache.put(request, responseClone);
         });
         return response;
       })

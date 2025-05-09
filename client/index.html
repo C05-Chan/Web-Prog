@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>RUN PARK</title>
+        <link rel="stylesheet" href="/style.css">
+        <script src="/index.js" defer></script>
+        <link rel="manifest" href="/manifest.json">
+    </head>
+
+    <body>
+        <header>
+            <h1>RUN PARK</h1>
+
+            <nav class="nav-container">
+                <button id="runners-results"> Overall Results</button>
+                <button class ="nav-buttons" id="sign-in">Sign In</button>
+                <button class ="nav-buttons"id="sign-out" style="display: none">Sign Out</button>
+
+                <section class="role-type" style="display: none;">
+                    <button class ="nav-buttons"id="admin">Admin</button>
+                    <button class ="nav-buttons" id="volunteer">Volunteer</button>
+
+                    <section class="admin-nav" style="display: none">
+                        <button class="nav-buttons" id="create-results">Create</button>
+                    </section>
+
+                    <section class="volunteer-nav" style="display: none;">
+                        <button class ="nav-buttons" id="timer">Timer</button>
+                        <button class ="nav-buttons" id="positions">Submit Positions</button>
+                    </section>
+                </section>
+            </nav>
+        </header>
+
+
+
+        <main class= "main-container">
+            <section class="section" id="admin-view">
+                <h2>Race Data Overview</h2>
+                <table id="race-data-table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Type</th>
+                            <th>Length</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            <!--blank table initially-->
+                    </tbody>
+                </table>
+            </section>
+
+                <!-- Manage Times - Admin -->
+            <section class="section" id="time-management" style="display:none">
+                <h2>Manage Times</h2>
+                <button id="modify-times">Modify</button>
+
+                <ul class="position-times" id="times-management-list">
+                    <!--Times and position are added here -->
+                </ul>  
+
+                <section class="manage-times-container">
+                    <button id="save-times" style="display:none" >Save Times</button> 
+                    <button id="add-time" style="display:none">Add Time</button>
+
+                    <section class="popup" id="time-popup" style="display:none">
+                        <label for="time-input">Time (hh:mm:ss:ms)</label>
+                        <input type="text" id="time-input" placeholder="00:00:00:000">
+                        <button type="submit" id="popup_done">Done</button>
+                        <button id="popup-cancel">Cancel</button>
+                    </section>
+                </section>
+            </section>
+            
+            <!-- Manage Runners - Admin -->
+            <section class="section" id="runner-management" style="display:none">
+                <h2>Manage Runners</h2>
+                <button id="modify-runners">Modify</button>
+
+                <ul class="position-times" id="runners-management-list">
+                <!-- Runners will be added here -->
+                </ul>  
+
+                <section class="manage-runners-container" style="display:none">
+                    <button id="save-runners">Save Runners</button> 
+                    <button id="add-runner">Add Runner</button>
+                
+                    <section class="runner-popup" style="display:none">
+                    <label for="edit-runner-position">Position:</label>
+                    <input type="number" id="edit-runner-position">
+                
+                    <label for="edit-runner-id">ID:</label>
+                    <input type="number" id="edit-runner-id">
+                    
+                    <button id="runner-popup-done">Done</button>
+                    <button id="runner-popup-cancel">Cancel</button>
+                    </section>
+                </section>
+            </section>
+
+
+
+                <!-- Stopwatch Timer - Volunteer -->
+
+            <section class="section" id="timer-container">
+                <section class="stopwatch">
+                    <h2>Race Timer</h2>
+                    <div id="stopwatch-display">00:00:00:000</div>
+                    <section class="timer-buttons-container">
+                        <button id="start">Start</button>
+                        <button id="reset" style="display: none">Reset</button>
+                        <button id="stop" style="display: none">Stop</button>
+                        <button id="resume" style="display: none">Resume</button>
+                        <button id="record-time" style="display: none">Record Time</button>
+                    </section> 
+                    <button type="submit" id="submit-times">Submit Times</button>
+                </section>
+
+                <section class="position-container">
+                    <h3>Recorded Times</h3>
+                    <ol class="position-times" id="times-list">
+                    <!-- Times and positions are added here -->
+                    </ol>
+                </section>
+            </section>
+
+<!-- Runners Positions Submission -->
+            <section class="section" id="runners-container">
+                <h2>Submit Runner's Positions</h2>
+
+                <section class ="runners-input-container">
+                    <label for="runner-position">Position:</label>
+                    <input type="number" id="runner-position" name="runner-position" required>
+
+                    <label for="runner-ID">ID Number:</label>
+                    <input type="number" id="runner-ID" name="runner-ID" required>
+                </section>
+                
+                <button type="button" id="record-runner">Add 
+Runner</button>
+                <button type="submit" id="submit-runners"> Done </button>
+
+                <section class="runners-container">
+                    <h3>Recorded Submissions</h3>
+                    <ul class="position-times" id="runners-list">
+                    <!-- Runner's ID and Name -->
+                    </ul>
+                </section>
+            </section>
+
+<!-- Overall Results -->
+            <section class="section" id="result-container">
+                <h2>Overall Result</h2>
+                <table id="results-table">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Name</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            <!--blank table initially-->
+                    </tbody>
+                </table>
+            </section>
+
+<!-- Error Messages -->
+            <section id="error-container">
+                <p><span id="error-message"> </span></p>
+            </section> 
+        </main>
+    </body>
+</html>
